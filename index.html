@@ -1,5 +1,96 @@
 <!DOCTYPE html>
 <html lang="lv">
-<head><meta charset="UTF-8"><title>Gundegas Kalkulators</title></head>
-<body>Upload your code here later.</body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gundegas Kalkulators</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    input, select { width: 100%; padding: 10px; margin: 5px 0 15px; }
+    button { padding: 10px 20px; cursor: pointer; }
+    .result { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Gundegas Kalkulators</h1>
+  <label>Svars (kg)</label>
+  <input type="number" id="weight" value="78" />
+
+  <label>Augums (cm)</label>
+  <input type="number" id="height" value="166" />
+
+  <label>Vecums</label>
+  <input type="number" id="age" value="50" />
+
+  <label>Dzimums</label>
+  <select id="sex">
+    <option value="V" selected>Vīrietis</option>
+    <option value="S">Sieviete</option>
+  </select>
+
+  <label>Aktivitātes faktors</label>
+  <select id="activity">
+    <option value="1.2">1.2</option>
+    <option value="1.375">1.375</option>
+    <option value="1.55">1.55</option>
+    <option value="1.725">1.725</option>
+    <option value="1.9">1.9</option>
+  </select>
+
+  <button onclick="calculate()">Aprēķināt</button>
+
+  <div class="result" id="output"></div>
+
+  <script>
+    function calculate() {
+      const weight = parseFloat(document.getElementById('weight').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const age = parseFloat(document.getElementById('age').value);
+      const sex = document.getElementById('sex').value;
+      const activity = parseFloat(document.getElementById('activity').value);
+
+      const height_m = height / 100;
+      const bmi = weight / (height_m ** 2);
+      const height_in = height / 2.54;
+      const ibw = 50 + 2.3 * (height_in - 60);
+      const abw = ibw + 0.4 * (weight - ibw);
+
+      let bmr;
+      if (sex === 'V') {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+
+      const tdee = bmr * activity;
+      const maintenance = tdee;
+      const deficit = tdee - 500;
+
+      const protein_g = 1.2 * weight;
+      const protein_kcal = protein_g * 4;
+
+      const fat_kcal = deficit * 0.25;
+      const fat_g = fat_kcal / 9;
+
+      const carbs_kcal = deficit - protein_kcal - fat_kcal;
+      const carbs_g = carbs_kcal / 4;
+
+      document.getElementById('output').innerHTML = `
+        <h3>Rezultāti:</h3>
+        BMI: ${bmi.toFixed(2)}<br>
+        IBW: ${ibw.toFixed(2)} kg<br>
+        ABW: ${abw.toFixed(2)} kg<br>
+        BMR: ${bmr.toFixed(2)} kcal<br>
+        TDEE: ${tdee.toFixed(2)} kcal<br>
+        Kalorijas uzturēšanai: ${maintenance.toFixed(2)} kcal<br>
+        Deficīts (-500 kcal): ${deficit.toFixed(2)} kcal<br>
+        <br>
+        <strong>Makro (deficīta režīmā):</strong><br>
+        Proteīns: ${protein_g.toFixed(2)} g (${protein_kcal.toFixed(2)} kcal)<br>
+        Tauki: ${fat_g.toFixed(2)} g (${fat_kcal.toFixed(2)} kcal)<br>
+        Ogļhidrāti: ${carbs_g.toFixed(2)} g (${carbs_kcal.toFixed(2)} kcal)<br>
+      `;
+    }
+  </script>
+</body>
 </html>
