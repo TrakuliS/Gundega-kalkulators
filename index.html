@@ -1,6 +1,15 @@
 # uztura_kalkulators.py
 # Uztura kalkulators (CLI + drošs sandbox režīms)
 # Darbojas arī vidēs bez interaktīva input()
+# Balstīts uz Excel formulas 2.2 metodoloģiju
+
+"""
+LIETOŠANA (lokāli):
+    python uztura_kalkulators.py
+
+Ja vide neatbalsta input() (piem., Replit, Colab, sandbox, CI),
+programma automātiski parāda DEMO rezultātus.
+"""
 
 import sys
 
@@ -12,9 +21,9 @@ def ask_float(prompt, min_val=None, max_val=None):
         try:
             value = float(input(prompt))
             if min_val is not None and value < min_val:
-                raise ValueError("Pārāk mazs skaitlis")
+                raise ValueError("Pārāk mazs skaitlis!")
             if max_val is not None and value > max_val:
-                raise ValueError("Pārāk liels skaitlis")
+                raise ValueError("Pārāk liels skaitlis!")
             return value
         except ValueError as e:
             print(f"❌ Nederīga ievade: {e}. Mēģini vēlreiz.")
@@ -27,7 +36,7 @@ def ask_choice(prompt, choices):
         choice = input("Izvēle: ").strip()
         if choice in choices:
             return choice
-        print("❌ Nederīga izvēle, mēģini vēlreiz.")
+        print("❌ Nederīga izvēle. Mēģini vēlreiz.")
 
 # =========================
 # APRĒĶINU KODOLS (bez I/O)
@@ -43,7 +52,7 @@ def simulate(sex, age, height, weight, activity_factor, protein_g_per_kg, fat_pe
     
     adjusted_weight = ideal_weight + 0.4 * (weight - ideal_weight)
     
-    # BMR (Mifflin–St Jeor), izmantojam adjusted_weight pie augsta BMI
+    # BMR (Mifflin–St Jeor) – izmantojam adjusted_weight pie augsta BMI
     bmr_weight = adjusted_weight if bmi >= 35 else weight
     
     if sex == "Vīrietis":
@@ -60,7 +69,7 @@ def simulate(sex, age, height, weight, activity_factor, protein_g_per_kg, fat_pe
     # Makroelementi
     protein_g = protein_g_per_kg * (adjusted_weight if bmi > 30 else weight)
     fat_kcal = calories * (fat_percent / 100)
-    carb_kcal = calories - (protein_g * 4) - fat_kcal
+    carb_kcal = calories - protein_g * 4 - fat_kcal
     
     return {
         "bmi": bmi,
@@ -75,7 +84,9 @@ def simulate(sex, age, height, weight, activity_factor, protein_g_per_kg, fat_pe
 # INTERAKTĪVĀ CLI DAĻA
 # =========================
 def calculate_cli():
-    print("\n=== UZTURA KALKULATORS ===\n")
+    print("\n" + "="*30)
+    print("   UZTURA KALKULATORS   ")
+    print("="*30 + "\n")
     
     sex_key = ask_choice("Dzimums:", {"1": "Sieviete", "2": "Vīrietis"})
     sex = "Sieviete" if sex_key == "1" else "Vīrietis"
@@ -109,20 +120,26 @@ def calculate_cli():
         fat_percent=fat_percent,
     )
     
-    print("\n--- REZULTĀTI ---")
-    print(f"BMI:          {result['bmi']:.1f}")
-    print(f"BMR:         {result['bmr']:.0f} kcal")
-    print(f"Dienas kcal: {result['calories']:.0f} kcal")
+    print("\n" + "-"*30)
+    print("         REZULTĀTI         ")
+    print("-"*30)
+    print(f"• BMI:              {result['bmi']:.1f}")
+    print(f"• BMR (pamat vielmaiņa): {result['bmr']:.0f} kcal")
+    print(f"• Dienas kalorijas: {result['calories']:.0f} kcal")
     print("\nMakroelementi dienā:")
-    print(f" Proteīni:    {result['protein_g']:.0f} g")
-    print(f" Tauki:       {result['fat_g']:.0f} g")
-    print(f" Ogļhidrāti:  {result['carb_g']:.0f} g")
+    print(f"• Proteīni:         {result['protein_g']:.0f} g")
+    print(f"• Tauki:            {result['fat_g']:.0f} g")
+    print(f"• Ogļhidrāti:       {result['carb_g']:.0f} g")
+    print("-"*30)
 
 # =========================
-# DEMO / TEST REŽĪMS
+# DEMO REŽĪMS (online vidēm)
 # =========================
-def run_demo():
-    print("DEMO režīms aktivizēts\n")
+def show_demo():
+    print("\n" + "="*50)
+    print(" DEMO REŽĪMS (input() nav pieejams šajā vidē) ")
+    print("="*50 + "\n")
+    
     demo = simulate(
         sex="Vīrietis",
         age=30,
@@ -132,38 +149,30 @@ def run_demo():
         protein_g_per_kg=1.6,
         fat_percent=30,
     )
-    print("--- DEMO REZULTĀTI ---")
-    print(f"BMI:          {demo['bmi']:.1f}")
-    print(f"BMR:         {demo['bmr']:.0f} kcal")
-    print(f"Dienas kcal: {demo['calories']:.0f} kcal")
-    print(f"Proteīni:    {demo['protein_g']:.0f} g")
-    print(f"Tauki:       {demo['fat_g']:.0f} g")
-    print(f"Ogļhidrāti:  {demo['carb_g']:.0f} g")
+    
+    print("Piemērs: Vīrietis, 30 gadi, 180 cm, 85 kg, vidēja aktivitāte")
+    print("-"*60)
+    print(f"• BMI:              {demo['bmi']:.1f}")
+    print(f"• BMR:              {demo['bmr']:.0f} kcal")
+    print(f"• Dienas kalorijas: {demo['calories']:.0f} kcal")
+    print(f"• Proteīni:         {demo['protein_g']:.0f} g")
+    print(f"• Tauki:            {demo['fat_g']:.0f} g")
+    print(f"• Ogļhidrāti:       {demo['carb_g']:.0f} g")
+    print("-"*60)
 
 # =========================
 # ENTRY POINT
 # =========================
-FORCE_DEMO_MODE = True   # Maini uz False, ja gribi interaktīvo režīmu, kad tas ir pieejams
+FORCE_DEMO_MODE = True  # Maini uz False, ja gribi interaktīvu režīmu tur, kur iespējams
 
 if __name__ == "__main__":
-    if FORCE_DEMO_MODE:
-        run_demo()
+    # Pārbaudām, vai ir interaktīvs terminālis
+    is_interactive = sys.stdin is not None and sys.stdin.isatty()
+    
+    if FORCE_DEMO_MODE or not is_interactive:
+        show_demo()
     else:
-        # Mēģinām interaktīvo režīmu tikai tad, ja ir terminālis
-        if hasattr(sys, 'stdin') and sys.stdin.isatty():
-            try:
-                calculate_cli()
-            except KeyboardInterrupt:
-                print("\n\nPaldies par lietošanu!")
-        else:
-            # Ja nav interaktīva ievade (online vide, CI u.c.)
-            print("Interaktīvais režīms nav pieejams šajā vidē.")
-            print("Izpildām ātros testus un demo...")
-            
-            # Ātrie testi
-            try:
-                from test import _test_basic_case, _test_obese_case  # ja gribi testus atsevišķi
-            except ImportError:
-                pass  # ja testu nav, izlaižam
-            
-            run_demo()
+        try:
+            calculate_cli()
+        except KeyboardInterrupt:
+            print("\n\nProgramma pārtraukta. Uz redzēšanos!")
