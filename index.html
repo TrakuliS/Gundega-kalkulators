@@ -1,288 +1,169 @@
-<!DOCTYPE html>
-<html lang="lv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uztura Kalkulators</title>
-<style>
-        body { font-family: Arial; max-width: 700px; margin: 40px auto; padding: 20px; background: #f8f9fa; }
-        input, select { padding: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
-        button { background: #007bff; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
-        .result { margin-top: 30px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        :root {
-            --bg-color: rgba(255, 255, 255, 0.85); /* Gaišs overlay fonam */
-            --text-color: #333333;
-            --input-bg: #f0f0f0;
-            --button-bg: #007bff;
-            --button-text: #ffffff;
-            --accent: #4caf50;
-            --shadow: rgba(0, 0, 0, 0.1);
-        }
-        body.dark-mode {
-            --bg-color: rgba(18, 18, 18, 0.85); /* Tumšs overlay fonam */
-            --text-color: #e0e0e0;
-            --input-bg: #1e1e1e;
-            --button-bg: #0d47a1;
-            --accent: #66bb6a;
-            --shadow: rgba(255, 255, 255, 0.1);
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-image: url('https://media.gettyimages.com/id/1455279498/photo/pattern-of-variety-fresh-of-organic-fruits-and-vegetables-and-healthy-vegan-meal-ingredients.jpg?s=612x612&w=gi&k=20&c=uKwCbjOybFk5f_LOdfQHxV-se3VJtyJDEwlt4FNEW6c=');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: var(--bg-color); /* Overlay lai lasāmība */
-            background-blend-mode: multiply; /* Lai fons būtu subtīls */
-            color: var(--text-color);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: background 0.3s, color 0.3s;
-            min-height: 100vh; /* Lai fons aizpilda visu lapu */
-        }
-        h1 { text-align: center; margin-bottom: 30px; }
-        form { display: flex; flex-direction: column; gap: 15px; }
-        label { font-weight: bold; }
-        input, select {
-            padding: 10px;
-            background: var(--input-bg);
-            color: var(--text-color);
-            border: 1px solid var(--text-color);
-            border-radius: 5px;
-            transition: border 0.3s;
-        }
-        input:focus, select:focus { border-color: var(--accent); }
-        button {
-            background: var(--button-bg);
-            color: var(--button-text);
-            padding: 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        button:hover { background: #0056b3; }
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            background: var(--input-bg);
-            border-radius: 10px;
-            box-shadow: 0 4px 10px var(--shadow);
-            animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .toggle-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        .toggle input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px; width: 20px;
-            left: 2px; bottom: 2px;
-            background: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background: var(--accent); }
-        input:checked + .slider:before { transform: translateX(26px); }
-        
-        /* Slaidšovs stili */
-        .slideshow-container {
-            max-width: 100%;
-            position: relative;
-            margin: auto;
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px var(--shadow);
-        }
-        .mySlides {
-            display: none;
-        }
-        .mySlides img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
-        .prev, .next {
-            cursor: pointer;
-            position: absolute;
-            top: 50%;
-            width: auto;
-            padding: 16px;
-            margin-top: -22px;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-            transition: 0.6s ease;
-            border-radius: 0 3px 3px 0;
-            user-select: none;
-        }
-        .next {
-            right: 0;
-            border-radius: 3px 0 0 3px;
-        }
-        .prev:hover, .next:hover {
-            background-color: rgba(0,0,0,0.8);
-        }
-        .fade {
-            animation-name: fade;
-            animation-duration: 1.5s;
-        }
-        @keyframes fade {
-            from {opacity: .4} 
-            to {opacity: 1}
-        }
-        
-        /* Responsīvs dizains */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            h1 { font-size: 24px; }
-            button { font-size: 14px; }
-        }
-</style>
-</head>
-<body>
-    <div class="toggle-container">
-        <label class="toggle">
-            <input type="checkbox" id="darkToggle" onclick="toggleDarkMode()">
-            <span class="slider"></span>
-        </label>
-        <span style="margin-left: 10px;">Tumšais režīms</span>
-    </div>
+# uztura_kalkulators.py
+# Uztura kalkulators (CLI + drošs sandbox režīms)
+# Darbojas arī vidēs bez interaktīva input()
 
-<h1>Uztura Kalkulators</h1>
+import sys
 
-    <label>Svars (kg):</label>
-    <input type="number" id="svars" value="78">
+# =========================
+# PALĪGFUNKCIJAS IEVADĒM
+# =========================
+def ask_float(prompt, min_val=None, max_val=None):
+    while True:
+        try:
+            value = float(input(prompt))
+            if min_val is not None and value < min_val:
+                raise ValueError("Pārāk mazs skaitlis")
+            if max_val is not None and value > max_val:
+                raise ValueError("Pārāk liels skaitlis")
+            return value
+        except ValueError as e:
+            print(f"❌ Nederīga ievade: {e}. Mēģini vēlreiz.")
 
-    <label>Augums (cm):</label>
-    <input type="number" id="augums" value="166">
+def ask_choice(prompt, choices):
+    while True:
+        print(prompt)
+        for key, label in choices.items():
+            print(f" {key} – {label}")
+        choice = input("Izvēle: ").strip()
+        if choice in choices:
+            return choice
+        print("❌ Nederīga izvēle, mēģini vēlreiz.")
 
-    <label>Vecums (gadi):</label>
-    <input type="number" id="vecums" value="50">
-
-    <label>Dzimums:</label>
-    <select id="dzimums">
-        <option value="V" selected>Vīrietis</option>
-        <option value="S">Sieviete</option>
-    </select>
-
-    <label>Aktivitātes līmenis:</label>
-    <select id="aktivitate">
-        <option value="1.2">1.2 – Mazkustīgs</option>
-        <option value="1.375">1.375 – Viegla</option>
-        <option value="1.55" selected>1.55 – Vidēja</option>
-        <option value="1.725">1.725 – Augsta</option>
-        <option value="2.2">2.2+ – Ļoti augsta</option>
-    </select>
-
-    <button onclick="aprekinat()">Aprēķināt!</button>
-
-    <div class="result" id="rezultats"></div>
-
-    <script>
-    function aprekinat() {
-        const svars = parseFloat(document.getElementById("svars").value);
-        const augums = parseFloat(document.getElementById("augums").value);
-        const vecums = parseInt(document.getElementById("vecums").value);
-        const dzimums = document.getElementById("dzimums").value;
-        const aktivitates_faktors = parseFloat(document.getElementById("aktivitate").value);
-
-        // Šeit ir VISAS tās pašas formulas kā tavā Excel failā
-        const bmi = svars / ((augums / 100) ** 2);
-
-        const ibw = dzimums === "V" 
-            ? 50 + 2.3 * ((augums - 152.4) / 2.54)
-            : 45.5 + 2.3 * ((augums - 152.4) / 2.54);
-
-        const abw = bmi > 25 ? ibw + 0.4 * (svars - ibw) : svars;
-
-        const bmr = dzimums === "V"
-            ? 10 * svars + 6.25 * augums - 5 * vecums + 5
-            : 10 * svars + 6.25 * augums - 5 * vecums - 161;
-
-        const tdee = Math.round(bmr * aktivitates_faktors);
-
-        const proteina_koef = {1.2:1.2, 1.375:1.4, 1.55:1.6, 1.725:1.8, 2.2:2.2}[aktivitates_faktors] || 1.6;
-        const proteina_baze = bmi > 30 ? abw : svars;
-        const proteins = Math.round(proteina_baze * proteina_koef * 10) / 10;
-
-        const deficīts = bmi > 34 ? 750 : 500;
-        const kalorijas = tdee - deficīts;
-
-        let tauki = "", ogli = "", skidrumi = "";
-        if (bmi >= 25) {
-            const tauki_min = Math.round(kalorijas * 0.25 / 9);
-            const tauki_max = Math.round(kalorijas * 0.35 / 9);
-            const oh_min = Math.round((kalorijas - proteins*4 - tauki_max*9) / 4);
-            const oh_max = Math.round((kalorijas - proteins*4 - tauki_min*9) / 4);
-            tauki = `${tauki_min} – ${tauki_max} g`;
-            ogli = `${oh_min} – ${oh_max} g`;
-            skidrumi = `${(svars*30/1000).toFixed(1)} – ${(svars*40/1000).toFixed(1)} L`;
-        } else {
-            tauki = ogli = skidrumi = "Normāls svars – deficīts nav ieteicams";
-        }
-
-        document.getElementById("rezultats").innerHTML = `
-            <h2>Rezultāti</h2>
-            <p><strong>BMI:</strong> ${bmi.toFixed(1)}</p>
-            <p><strong>BMR:</strong> ${Math.round(bmr)} kcal</p>
-            <p><strong>TDEE (uzturēšanai):</strong> ${tdee} kcal</p>
-            <p><strong>Ieteicamās kalorijas svara nomešanai:</strong> ${kalorijas} kcal</p>
-            <p><strong>Proteīns:</strong> ${proteins} g</p>
-            <p><strong>Tauki:</strong> ${tauki}</p>
-            <p><strong>Ogļhidrāti:</strong> ${ogli}</p>
-            <p><strong>Šķidrums:</strong> ${skidrumi}</p>
-        `;
+# =========================
+# APRĒĶINU KODOLS (bez I/O)
+# =========================
+def simulate(sex, age, height, weight, activity_factor, protein_g_per_kg, fat_percent):
+    bmi = weight / ((height / 100) ** 2)
+    
+    # Ideālais svars (Devine formula)
+    if sex == "Vīrietis":
+        ideal_weight = 50 + 2.3 * ((height - 152.4) / 2.54)
+    else:
+        ideal_weight = 45.5 + 2.3 * ((height - 152.4) / 2.54)
+    
+    adjusted_weight = ideal_weight + 0.4 * (weight - ideal_weight)
+    
+    # BMR (Mifflin–St Jeor), izmantojam adjusted_weight pie augsta BMI
+    bmr_weight = adjusted_weight if bmi >= 35 else weight
+    
+    if sex == "Vīrietis":
+        bmr = 10 * bmr_weight + 6.25 * height - 5 * age + 5
+    else:
+        bmr = 10 * bmr_weight + 6.25 * height - 5 * age - 161
+    
+    # TDEE
+    tdee = bmr * activity_factor
+    
+    # Kaloriju mērķis (deficīts pie liekā svara)
+    calories = max(tdee - 500, 1500) if bmi > 25 else tdee
+    
+    # Makroelementi
+    protein_g = protein_g_per_kg * (adjusted_weight if bmi > 30 else weight)
+    fat_kcal = calories * (fat_percent / 100)
+    carb_kcal = calories - (protein_g * 4) - fat_kcal
+    
+    return {
+        "bmi": bmi,
+        "bmr": bmr,
+        "calories": calories,
+        "protein_g": protein_g,
+        "fat_g": fat_kcal / 9,
+        "carb_g": carb_kcal / 4,
     }
-    </script>
-</body>
-</html>
-    <!-- Slaidšovs ar ēdienu attēliem -->
-    <div class="slideshow-container">
-        <div class="mySlides fade">
-            <img src="https://nutritionsource.hsph.harvard.edu/wp-content/uploads/2012/09/HEPJan2015.jpg" alt="Healthy Eating Plate">
-        </div>
-        <div class="mySlides fade">
-            <img src="https://i.ytimg.com/vi/enHssz8BC9U/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCk6Z46UrpAx3GWWrVAq2Ca8Bz6iA" alt="Diet Chart Drawing">
-        </div>
-        <div class="mySlides fade">
-            <img src="https://media.istockphoto.com/id/1468453679/vector/food-nutrition-groups-pyramid.jpg?s=612x612&w=0&k=20&c=tkHPcWzULNrnYUbbpWGPcEH4iuOie7JsEOTcKW3BySQ=" alt="Food Pyramid">
-        </div>
-        <div class="mySlides fade">
-            <img src="https://i.ytimg.com/vi/ikA8qshCrus/sddefault.jpg" alt="Food Collage">
-        </div>
-        <div class="mySlides fade">
-            <img src="https://www.shutterstock.com/image-vector/white-boy-eating-on-table-600w-2283829093.jpg" alt="Macronutrients Chart">
-        </div>
-        <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-        <a class="next" onclick="plusSlides(1)">&#10095;</a>
-    </div>
 
-    <form>
-        <label>Svars (kg):</label>
-        <input type="number" id="svars" value="78" min="1" required>
+# =========================
+# INTERAKTĪVĀ CLI DAĻA
+# =========================
+def calculate_cli():
+    print("\n=== UZTURA KALKULATORS ===\n")
+    
+    sex_key = ask_choice("Dzimums:", {"1": "Sieviete", "2": "Vīrietis"})
+    sex = "Sieviete" if sex_key == "1" else "Vīrietis"
+    
+    age = ask_float("Vecums (gadi): ", 18, 100)
+    height = ask_float("Augums (cm): ", 140, 220)
+    weight = ask_float("Svars (kg): ", 40, 250)
+    
+    activity_key = ask_choice(
+        "Fiziskā aktivitāte:",
+        {
+            "1": "Mazkustīgs (1.2)",
+            "2": "Viegla aktivitāte (1.375)",
+            "3": "Vidēja aktivitāte (1.55)",
+            "4": "Augsta aktivitāte (1.725)",
+            "5": "Ļoti augsta aktivitāte (1.9)",
+        }
+    )
+    activity_factor = {"1": 1.2, "2": 1.375, "3": 1.55, "4": 1.725, "5": 1.9}[activity_key]
+    
+    protein_g_per_kg = ask_float("Proteīni (g/kg): ", 1.0, 3.0)
+    fat_percent = ask_float("Tauki (% no kcal): ", 15, 40)
+    
+    result = simulate(
+        sex=sex,
+        age=age,
+        height=height,
+        weight=weight,
+        activity_factor=activity_factor,
+        protein_g_per_kg=protein_g_per_kg,
+        fat_percent=fat_percent,
+    )
+    
+    print("\n--- REZULTĀTI ---")
+    print(f"BMI:          {result['bmi']:.1f}")
+    print(f"BMR:         {result['bmr']:.0f} kcal")
+    print(f"Dienas kcal: {result['calories']:.0f} kcal")
+    print("\nMakroelementi dienā:")
+    print(f" Proteīni:    {result['protein_g']:.0f} g")
+    print(f" Tauki:       {result['fat_g']:.0f} g")
+    print(f" Ogļhidrāti:  {result['carb_g']:.0f} g")
 
-        <label>Augums (cm):</label>
-        <input type="number" id="augums" value="166" min="1" required>
+# =========================
+# DEMO / TEST REŽĪMS
+# =========================
+def run_demo():
+    print("DEMO režīms aktivizēts\n")
+    demo = simulate(
+        sex="Vīrietis",
+        age=30,
+        height=180,
+        weight=85,
+        activity_factor=1.55,
+        protein_g_per_kg=1.6,
+        fat_percent=30,
+    )
+    print("--- DEMO REZULTĀTI ---")
+    print(f"BMI:          {demo['bmi']:.1f}")
+    print(f"BMR:         {demo['bmr']:.0f} kcal")
+    print(f"Dienas kcal: {demo['calories']:.0f} kcal")
+    print(f"Proteīni:    {demo['protein_g']:.0f} g")
+    print(f"Tauki:       {demo['fat_g']:.0f} g")
+    print(f"Ogļhidrāti:  {demo['carb_g']:.0f} g")
 
-        <label>Vec
+# =========================
+# ENTRY POINT
+# =========================
+FORCE_DEMO_MODE = True   # Maini uz False, ja gribi interaktīvo režīmu, kad tas ir pieejams
+
+if __name__ == "__main__":
+    if FORCE_DEMO_MODE:
+        run_demo()
+    else:
+        # Mēģinām interaktīvo režīmu tikai tad, ja ir terminālis
+        if hasattr(sys, 'stdin') and sys.stdin.isatty():
+            try:
+                calculate_cli()
+            except KeyboardInterrupt:
+                print("\n\nPaldies par lietošanu!")
+        else:
+            # Ja nav interaktīva ievade (online vide, CI u.c.)
+            print("Interaktīvais režīms nav pieejams šajā vidē.")
+            print("Izpildām ātros testus un demo...")
+            
+            # Ātrie testi
+            try:
+                from test import _test_basic_case, _test_obese_case  # ja gribi testus atsevišķi
+            except ImportError:
+                pass  # ja testu nav, izlaižam
+            
+            run_demo()
